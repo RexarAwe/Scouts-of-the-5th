@@ -21,12 +21,27 @@ public class Map : MonoBehaviour
 
     [SerializeField] private GameObject cursorTile;
 
+    [SerializeField] private List<TileData> tileDatas;
+    private Dictionary<TileBase, TileData> dataFromTiles;
+
+    private List<(int, int)> tileCoordinates;
+
     void Start()
     {
         tilemap = GetComponent<Tilemap>();
         tilemap.CompressBounds();
         bounds = tilemap.cellBounds;
-        TileBase[] allTiles = tilemap.GetTilesBlock(bounds);
+        //TileBase[] allTiles = tilemap.GetTilesBlock(bounds);
+
+        dataFromTiles = new Dictionary<TileBase, TileData>();
+
+        foreach (TileData tileData in tileDatas)
+        {
+            foreach (TileBase tile in tileData.tiles)
+            {
+                dataFromTiles.Add(tile, tileData);
+            }
+        }
 
         //Debug.Log(allTiles.Length);
         //Debug.Log(bounds.size.x + ", " + bounds.size.y);
@@ -84,7 +99,10 @@ public class Map : MonoBehaviour
 
                     // get selected tile information
                     selectedTileCoordinate = tileCoordinate;
-                    Debug.Log("Selected: " + selectedTileCoordinate);
+                    // Debug.Log("Selected: " + selectedTileCoordinate);
+
+                    TileBase selectedTile = tilemap.GetTile(selectedTileCoordinate);
+                    Debug.Log("Selected: " + dataFromTiles[selectedTile].terrain);
                 }
             }
         }
