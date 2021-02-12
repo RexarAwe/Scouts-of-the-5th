@@ -1,38 +1,64 @@
-﻿using System.Collections;
+﻿// manages tile states and effects
+
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class Map : MonoBehaviour
+public class MapManager : MonoBehaviour
 {
     private Tilemap tilemap;
+
     private Vector3 mouseWorldPos;
     private Vector3Int tileCoordinate;
     private Vector3Int lastTileCoordinate;
-
-    private GameObject oldCursorTile;
-
     private BoundsInt bounds;
 
+    // to display selection
     private bool selected;
     private Vector3Int selectedTileCoordinate;
-
-    //private TileBase tile2;
-
     [SerializeField] private GameObject cursorTile;
+    private GameObject oldCursorTile;
 
+    // tileData provides more info about the TileBase
     [SerializeField] private List<TileData> tileDatas;
     private Dictionary<TileBase, TileData> dataFromTiles;
 
-    private List<(int, int)> tileCoordinates;
+    // store tilemap information needed for gameplay
+    [SerializeField] private List<Vector3> tileCoordinates;
+    [SerializeField] private List<bool> tileOccupancy;
 
     void Start()
     {
-        tilemap = GetComponent<Tilemap>();
+        tilemap = GameObject.Find("Tilemap").GetComponent<Tilemap>();
         tilemap.CompressBounds();
         bounds = tilemap.cellBounds;
-        //TileBase[] allTiles = tilemap.GetTilesBlock(bounds);
 
+        // setup all tiles information
+        TileBase[] allTiles = tilemap.GetTilesBlock(bounds); // arranged left to right, bottom to top
+
+        // populate list of all tile coordinates, left to right, bottom to top
+        int x = tilemap.origin.x;
+        int y = tilemap.origin.y;
+        int z = tilemap.origin.z;
+
+        for (int i = 0; i < allTiles.Length; i++)
+        {
+            tileCoordinates.Add(new Vector3(x, y, z));
+            tileOccupancy.Add(false);
+
+            if (x < tilemap.origin.x + bounds.size.x - 1)
+            {
+                x++;
+            }
+            else
+            {
+                x = tilemap.origin.x;
+                y++;
+            }
+        }
+
+        // automatically pair tilebase asset to tiledata
         dataFromTiles = new Dictionary<TileBase, TileData>();
 
         foreach (TileData tileData in tileDatas)
@@ -43,29 +69,9 @@ public class Map : MonoBehaviour
             }
         }
 
-        //Debug.Log(allTiles.Length);
-        //Debug.Log(bounds.size.x + ", " + bounds.size.y);
-
-        //for (int x = 0; x < bounds.size.x; x++)
-        //{
-        //    for (int y = 0; y < bounds.size.y; y++)
-        //    {
-        //        TileBase tile = allTiles[x + y * bounds.size.x];
-        //        if (tile != null)
-        //        {
-        //            Debug.Log("x:" + x + " y:" + y + " tile:" + tile.name);
-        //        }
-        //        else
-        //        {
-        //            Debug.Log("x:" + x + " y:" + y + " tile: (null)");
-        //        }
-        //    }
-        //}
-
-        //tile2 = allTiles[3];
-        //tilemap.SetTile(new Vector3Int(-1, 0, 0), tile2); // uses transform positions
-
-        //Debug.Log(tilemap.origin);
+        Debug.Log(allTiles.Length);
+        Debug.Log(bounds.size.x + ", " + bounds.size.y);
+        Debug.Log("Tilemap origin: " + tilemap.origin);
     }
 
     void Update()
@@ -73,7 +79,7 @@ public class Map : MonoBehaviour
         mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         tileCoordinate = tilemap.WorldToCell(mouseWorldPos);
 
-        // make sure within tilebox bounds
+        // make sure within tilebox bounds, then create selection display at mouse location
         if ((tileCoordinate.x >= bounds.x) && (tileCoordinate.x < (bounds.x + bounds.size.x)) && (tileCoordinate.y >= bounds.y) && (tileCoordinate.y < (bounds.y + bounds.size.y)))
         {
             //Debug.Log(tileCoordinate);
@@ -83,26 +89,25 @@ public class Map : MonoBehaviour
                 Vector3 worldPos = tilemap.CellToWorld(tileCoordinate);
                 oldCursorTile = Instantiate(cursorTile, worldPos, transform.rotation);
             }
-            //tilemap.SetTile(tileCoordinate, tile2); // uses transform positions?
-
         }
 
         lastTileCoordinate = tileCoordinate; // remember last Tile coordinate to check
 
+        
         if (Input.GetMouseButtonDown(0))
         {
             if ((tileCoordinate.x >= bounds.x) && (tileCoordinate.x < (bounds.x + bounds.size.x)) && (tileCoordinate.y >= bounds.y) && (tileCoordinate.y < (bounds.y + bounds.size.y)))
             {
-                if(!selected)
+                // keep selection display at mouse location when clicked, right click to deselect
+                if (!selected)
                 {
                     selected = true;
 
                     // get selected tile information
                     selectedTileCoordinate = tileCoordinate;
-                    // Debug.Log("Selected: " + selectedTileCoordinate);
 
                     TileBase selectedTile = tilemap.GetTile(selectedTileCoordinate);
-                    Debug.Log("Selected: " + dataFromTiles[selectedTile].terrain);
+                    Debug.Log("Selected: " + dataFromTiles[selectedTile].terrain + ", " + selectedTileCoordinate);
                 }
             }
         }
@@ -112,7 +117,23 @@ public class Map : MonoBehaviour
             if (selected)
             {
                 selected = false;
-                Debug.Log("Deselected");
+                // Debug.Log("Deselected");
+            }
+        }
+    }
+
+    public void SetOccupancy(bool val, int index)
+    {
+        tileOccupancy[index] = val;
+    }
+
+    public void SetOccupancy(bool val, Vector3 location) 
+    {
+        for(int i = 0; i < tileCoordinates.Count; i++)
+        {
+            if(tileCoordinates[i] == location)
+            {
+                tileOccupancy[i] = val;
             }
         }
     }
