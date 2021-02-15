@@ -25,7 +25,7 @@ public class MapManager : MonoBehaviour
     private Dictionary<TileBase, TileData> dataFromTiles;
 
     // store tilemap information needed for gameplay
-    [SerializeField] private List<Vector3> tileCoordinates;
+    [SerializeField] private List<Vector3Int> tileCoordinates;
     [SerializeField] private List<bool> tileOccupancy;
 
     void Start()
@@ -44,7 +44,7 @@ public class MapManager : MonoBehaviour
 
         for (int i = 0; i < allTiles.Length; i++)
         {
-            tileCoordinates.Add(new Vector3(x, y, z));
+            tileCoordinates.Add(new Vector3Int(x, y, z));
             tileOccupancy.Add(false);
 
             if (x < tilemap.origin.x + bounds.size.x - 1)
@@ -127,12 +127,17 @@ public class MapManager : MonoBehaviour
         tileOccupancy[index] = val;
     }
 
-    public void SetOccupancy(bool val, Vector3 location) 
+    public void SetOccupancy(bool val, Vector3Int location) 
     {
+        // Debug.Log("location to search: " + location);
+        // Debug.Log("tileCoordinates count = " + tileCoordinates.Count);
         for(int i = 0; i < tileCoordinates.Count; i++)
         {
+            // Debug.Log("WHAT?");
+            // Debug.Log("comparing to index " + i + " coordinates " + tileCoordinates[i]);
             if(tileCoordinates[i] == location)
             {
+                Debug.Log("Setting occupancy at index " + i);
                 tileOccupancy[i] = val;
             }
         }
