@@ -8,6 +8,7 @@ using UnityEngine.Tilemaps;
 public class MapManager : MonoBehaviour
 {
     private Tilemap tilemap;
+    private Tilemap moveHL; // to highlight movement range
 
     private Vector3 mouseWorldPos;
     private Vector3Int tileCoordinate;
@@ -28,9 +29,13 @@ public class MapManager : MonoBehaviour
     [SerializeField] private List<Vector3Int> tileCoordinates;
     [SerializeField] private List<bool> tileOccupancy;
 
+    [SerializeField] TileBase moveHLTile;
+
     void Start()
     {
         tilemap = GameObject.Find("Tilemap").GetComponent<Tilemap>();
+        moveHL = GameObject.Find("Move Indicator").GetComponent<Tilemap>();
+
         tilemap.CompressBounds();
         bounds = tilemap.cellBounds;
 
@@ -69,9 +74,9 @@ public class MapManager : MonoBehaviour
             }
         }
 
-        Debug.Log(allTiles.Length);
-        Debug.Log(bounds.size.x + ", " + bounds.size.y);
-        Debug.Log("Tilemap origin: " + tilemap.origin);
+        // Debug.Log(allTiles.Length);
+        // Debug.Log(bounds.size.x + ", " + bounds.size.y);
+        // Debug.Log("Tilemap origin: " + tilemap.origin);
     }
 
     void Update()
@@ -137,9 +142,99 @@ public class MapManager : MonoBehaviour
             // Debug.Log("comparing to index " + i + " coordinates " + tileCoordinates[i]);
             if(tileCoordinates[i] == location)
             {
-                Debug.Log("Setting occupancy at index " + i);
+                // Debug.Log("Setting occupancy at index " + i);
                 tileOccupancy[i] = val;
             }
         }
+    }
+
+    // given the unit location, compute and display movable hexes
+    public void CheckMovement(Vector3 unitLoc, float unitSpd)
+    {
+        Debug.Log("UnitLoc: " + unitLoc); // cell position
+
+        // moveHL.SetTile(new Vector3Int(0, 0, 0), moveHLTile);
+
+        // based on spd stat, check each direction and settile on Move Indicator tileset, after movement, clear
+
+        // check top right, right, bot right, bot left, left, top left
+
+        //top right (+1 to y from unitLoc, also +1 to x if going from odd y to even y)
+        float x = unitLoc.x;
+        float y = unitLoc.y;
+
+        moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+        
+        // go around the unitLoc
+        for (int i = 1; i <= unitSpd; i++)
+        {
+            x = unitLoc.x + i;
+            y = unitLoc.y;
+
+            for (int j = 0; j < i; j++)
+            {
+                // go up left
+                if (Mathf.Abs(y) % 2 == 0) // current y is even 
+                {
+                    x--;
+                }
+                y++;
+                moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+            }
+
+            for (int j = 0; j < i; j++)
+            {
+                // go left
+                x--;
+                moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+            }
+
+            for (int j = 0; j < i; j++)
+            {
+                // go down left
+                if (Mathf.Abs(y) % 2 == 0) // current y is even 
+                {
+                    x--;
+                }
+                y--;
+                moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+            }
+
+            for (int j = 0; j < i; j++)
+            {
+                // go down right
+                if (Mathf.Abs(y) % 2 == 1) // current y is odd 
+                {
+                    x++;
+                }
+                y--;
+                moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+            }
+
+            for (int j = 0; j < i; j++)
+            {
+                // go right
+                x++;
+                moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+            }
+
+            for (int j = 0; j < i; j++)
+            {
+                // go up right
+                if (Mathf.Abs(y) % 2 == 1) // current y is odd 
+                {
+                    x++;
+                }
+                y++;
+                moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+            }
+        }
+            
+        
+    }
+
+    public void ClearHLTiles()
+    {
+        moveHL.ClearAllTiles();
     }
 }
