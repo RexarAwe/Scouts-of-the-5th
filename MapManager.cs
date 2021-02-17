@@ -28,8 +28,11 @@ public class MapManager : MonoBehaviour
     // store tilemap information needed for gameplay
     [SerializeField] private List<Vector3Int> tileCoordinates;
     [SerializeField] private List<bool> tileOccupancy;
+    [SerializeField] private List<bool> tileMovable;
 
     [SerializeField] TileBase moveHLTile;
+
+    
 
     void Start()
     {
@@ -51,6 +54,7 @@ public class MapManager : MonoBehaviour
         {
             tileCoordinates.Add(new Vector3Int(x, y, z));
             tileOccupancy.Add(false);
+            tileMovable.Add(false);
 
             if (x < tilemap.origin.x + bounds.size.x - 1)
             {
@@ -112,7 +116,7 @@ public class MapManager : MonoBehaviour
                     selectedTileCoordinate = tileCoordinate;
 
                     TileBase selectedTile = tilemap.GetTile(selectedTileCoordinate);
-                    Debug.Log("Selected: " + dataFromTiles[selectedTile].terrain + ", " + selectedTileCoordinate);
+                    Debug.Log("Selected: " + dataFromTiles[selectedTile].terrain + ", " + selectedTileCoordinate + ", Movable status: " + GetMovableStatus(selectedTileCoordinate));
                 }
             }
         }
@@ -125,6 +129,21 @@ public class MapManager : MonoBehaviour
                 // Debug.Log("Deselected");
             }
         }
+    }
+
+    // returns moveable status
+    public bool GetMovableStatus(Vector3Int location)
+    {
+        for (int i = 0; i < tileCoordinates.Count; i++)
+        {
+            // Debug.Log("comparing to index " + i + " coordinates " + tileCoordinates[i]);
+            if (tileCoordinates[i] == location)
+            {
+                return tileMovable[i]; ;
+            }
+        }
+
+        return false;
     }
 
     public void SetOccupancy(bool val, int index)
@@ -144,6 +163,19 @@ public class MapManager : MonoBehaviour
             {
                 // Debug.Log("Setting occupancy at index " + i);
                 tileOccupancy[i] = val;
+            }
+        }
+    }
+
+    private void SetMovable(bool val, Vector3Int location)
+    {
+        for (int i = 0; i < tileCoordinates.Count; i++)
+        {
+            // Debug.Log("comparing to index " + i + " coordinates " + tileCoordinates[i]);
+            if (tileCoordinates[i] == location)
+            {
+                // Debug.Log("Setting occupancy at index " + i);
+                tileMovable[i] = val;
             }
         }
     }
@@ -180,6 +212,7 @@ public class MapManager : MonoBehaviour
                 }
                 y++;
                 moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+                SetMovable(true, new Vector3Int((int)x, (int)y, 0));
             }
 
             for (int j = 0; j < i; j++)
@@ -187,6 +220,7 @@ public class MapManager : MonoBehaviour
                 // go left
                 x--;
                 moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+                SetMovable(true, new Vector3Int((int)x, (int)y, 0));
             }
 
             for (int j = 0; j < i; j++)
@@ -198,6 +232,7 @@ public class MapManager : MonoBehaviour
                 }
                 y--;
                 moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+                SetMovable(true, new Vector3Int((int)x, (int)y, 0));
             }
 
             for (int j = 0; j < i; j++)
@@ -209,6 +244,7 @@ public class MapManager : MonoBehaviour
                 }
                 y--;
                 moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+                SetMovable(true, new Vector3Int((int)x, (int)y, 0));
             }
 
             for (int j = 0; j < i; j++)
@@ -216,6 +252,7 @@ public class MapManager : MonoBehaviour
                 // go right
                 x++;
                 moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+                SetMovable(true, new Vector3Int((int)x, (int)y, 0));
             }
 
             for (int j = 0; j < i; j++)
@@ -227,14 +264,29 @@ public class MapManager : MonoBehaviour
                 }
                 y++;
                 moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+                SetMovable(true, new Vector3Int((int)x, (int)y, 0));
             }
         }
-            
-        
     }
 
     public void ClearHLTiles()
     {
         moveHL.ClearAllTiles();
+
+        // reset all movable status to false
+        for (int i = 0; i < tileMovable.Count; i++)
+        {
+            tileMovable[i] = false;
+        }
     }
+
+    // check whether the hex at mousePos is a valid hex to move to
+    //public bool CheckMoveHex(Vector3 mousePos)
+    //{
+    //    Debug.Log("mouse at " + mousePos);
+    //    Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(mousePos);
+    //    Vector3Int tileCoordinate = tilemap.WorldToCell(mouseWorldPos);
+
+    //    return GetMovableStatus(tileCoordinate);
+    //}
 }

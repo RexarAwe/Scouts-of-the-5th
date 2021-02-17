@@ -21,13 +21,17 @@ public class Unit : MonoBehaviour
     private MapManager mapManager;
     private GameManager gameManager;
 
+    Tilemap tilemap;
+
+    private bool movable = false;
+
     //private Tilemap moveHL;
 
     void Start()
     {
         mapManager = GameObject.Find("Map Manager").GetComponent<MapManager>();
         gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
-        Tilemap tilemap = GameObject.Find("Tilemap").GetComponent<Tilemap>();
+        tilemap = GameObject.Find("Tilemap").GetComponent<Tilemap>();
         //moveHL = GameObject.Find("Move Indicator").GetComponent<Tilemap>();
 
         location = tilemap.WorldToCell(transform.position);
@@ -37,13 +41,44 @@ public class Unit : MonoBehaviour
         mapManager.SetOccupancy(true, location);
 
         // add the unit to gameManager
-        gameManager.AddUnit(gameObject);
+        // gameManager.AddUnit(gameObject);
         // Debug.Log("Unit count: " + gameManager.units.Count);
     }
 
     void Update()
     {
-        
+        if(Input.GetMouseButtonDown(0))
+        {
+            if(movable)
+            {
+                Debug.Log("move here");
+                Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                Vector3Int tileCoordinate = tilemap.WorldToCell(mouseWorldPos);
+
+                if (mapManager.GetMovableStatus(tileCoordinate))
+                {
+                    // move the unit there
+                    location = tileCoordinate;
+                    transform.position = tilemap.CellToWorld(location);
+                }
+
+                //Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                //Vector3Int tileCoordinate = tilemap.WorldToCell(mouseWorldPos);
+
+                movable = false;
+            }
+        }
+
+        //if (movable)
+        //{
+        //    Debug.Log("move here 1");
+        //    if (Input.GetMouseButtonDown(1))
+        //    {
+        //        Debug.Log("move here");
+        //    }
+
+        //    movable = false;
+        //}
     }
 
     public void initStats(int id_val, int atk_val = 0, int def_val = 0, int init_val = 0, int spd_val = 0, int hp_val = 0)
@@ -70,5 +105,12 @@ public class Unit : MonoBehaviour
         mapManager.CheckMovement(location, spd);
 
         // onclick, moves that unit to that hex
+        // if click on any tile that has movable == true, move unit location there
+        movable = true;
+    }
+
+    public float GetInit()
+    {
+        return init;
     }
 }
