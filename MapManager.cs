@@ -89,46 +89,58 @@ public class MapManager : MonoBehaviour
         tileCoordinate = tilemap.WorldToCell(mouseWorldPos);
 
         // make sure within tilebox bounds, then create selection display at mouse location
-        if ((tileCoordinate.x >= bounds.x) && (tileCoordinate.x < (bounds.x + bounds.size.x)) && (tileCoordinate.y >= bounds.y) && (tileCoordinate.y < (bounds.y + bounds.size.y)))
-        {
-            //Debug.Log(tileCoordinate);
-            if (lastTileCoordinate != tileCoordinate && !selected) // check if moved since last time
-            {
-                Destroy(oldCursorTile);
-                Vector3 worldPos = tilemap.CellToWorld(tileCoordinate);
-                oldCursorTile = Instantiate(cursorTile, worldPos, transform.rotation);
-            }
-        }
+        //if ((tileCoordinate.x >= bounds.x) && (tileCoordinate.x < (bounds.x + bounds.size.x)) && (tileCoordinate.y >= bounds.y) && (tileCoordinate.y < (bounds.y + bounds.size.y)))
+        //{
+        //    //Debug.Log(tileCoordinate);
+        //    if (lastTileCoordinate != tileCoordinate && !selected) // check if moved since last time
+        //    {
+        //        Destroy(oldCursorTile);
+        //        Vector3 worldPos = tilemap.CellToWorld(tileCoordinate);
+        //        oldCursorTile = Instantiate(cursorTile, worldPos, transform.rotation);
+        //    }
+        //}
 
-        lastTileCoordinate = tileCoordinate; // remember last Tile coordinate to check
+        //lastTileCoordinate = tileCoordinate; // remember last Tile coordinate to check
 
-        
+
         if (Input.GetMouseButtonDown(0))
         {
             if ((tileCoordinate.x >= bounds.x) && (tileCoordinate.x < (bounds.x + bounds.size.x)) && (tileCoordinate.y >= bounds.y) && (tileCoordinate.y < (bounds.y + bounds.size.y)))
             {
-                // keep selection display at mouse location when clicked, right click to deselect
-                if (!selected)
-                {
-                    selected = true;
+                // get selected tile information
+                selectedTileCoordinate = tileCoordinate;
 
-                    // get selected tile information
-                    selectedTileCoordinate = tileCoordinate;
-
-                    TileBase selectedTile = tilemap.GetTile(selectedTileCoordinate);
-                    Debug.Log("Selected: " + dataFromTiles[selectedTile].terrain + ", " + selectedTileCoordinate + ", Movable status: " + GetMovableStatus(selectedTileCoordinate));
-                }
+                TileBase selectedTile = tilemap.GetTile(selectedTileCoordinate);
+                Debug.Log("Selected: " + dataFromTiles[selectedTile].terrain + ", " + selectedTileCoordinate + ", Movable status: " + GetMovableStatus(selectedTileCoordinate));
             }
         }
 
-        if (Input.GetMouseButtonDown(1))
-        {
-            if (selected)
-            {
-                selected = false;
-                // Debug.Log("Deselected");
-            }
-        }
+        //if (Input.GetMouseButtonDown(0))
+        //{
+        //    if ((tileCoordinate.x >= bounds.x) && (tileCoordinate.x < (bounds.x + bounds.size.x)) && (tileCoordinate.y >= bounds.y) && (tileCoordinate.y < (bounds.y + bounds.size.y)))
+        //    {
+        //        // keep selection display at mouse location when clicked, right click to deselect
+        //        if (!selected)
+        //        {
+        //            selected = true;
+
+        //            // get selected tile information
+        //            selectedTileCoordinate = tileCoordinate;
+
+        //            TileBase selectedTile = tilemap.GetTile(selectedTileCoordinate);
+        //            Debug.Log("Selected: " + dataFromTiles[selectedTile].terrain + ", " + selectedTileCoordinate + ", Movable status: " + GetMovableStatus(selectedTileCoordinate));
+        //        }
+        //    }
+        //}
+
+        //if (Input.GetMouseButtonDown(1))
+        //{
+        //    if (selected)
+        //    {
+        //        selected = false;
+        //        // Debug.Log("Deselected");
+        //    }
+        //}
     }
 
     // returns moveable status
@@ -136,10 +148,22 @@ public class MapManager : MonoBehaviour
     {
         for (int i = 0; i < tileCoordinates.Count; i++)
         {
-            // Debug.Log("comparing to index " + i + " coordinates " + tileCoordinates[i]);
             if (tileCoordinates[i] == location)
             {
                 return tileMovable[i]; ;
+            }
+        }
+
+        return false;
+    }
+
+    public bool GetOccupancyStatus(Vector3Int location)
+    {
+        for (int i = 0; i < tileCoordinates.Count; i++)
+        {
+            if (tileCoordinates[i] == location)
+            {
+                return tileOccupancy[i]; ;
             }
         }
 
@@ -185,17 +209,11 @@ public class MapManager : MonoBehaviour
     {
         Debug.Log("UnitLoc: " + unitLoc); // cell position
 
-        // moveHL.SetTile(new Vector3Int(0, 0, 0), moveHLTile);
-
-        // based on spd stat, check each direction and settile on Move Indicator tileset, after movement, clear
-
-        // check top right, right, bot right, bot left, left, top left
-
         //top right (+1 to y from unitLoc, also +1 to x if going from odd y to even y)
         float x = unitLoc.x;
         float y = unitLoc.y;
 
-        moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+        // moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
         
         // go around the unitLoc
         for (int i = 1; i <= unitSpd; i++)
@@ -211,7 +229,7 @@ public class MapManager : MonoBehaviour
                     x--;
                 }
                 y++;
-                moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+                //moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
                 SetMovable(true, new Vector3Int((int)x, (int)y, 0));
             }
 
@@ -219,7 +237,7 @@ public class MapManager : MonoBehaviour
             {
                 // go left
                 x--;
-                moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+                //moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
                 SetMovable(true, new Vector3Int((int)x, (int)y, 0));
             }
 
@@ -231,7 +249,7 @@ public class MapManager : MonoBehaviour
                     x--;
                 }
                 y--;
-                moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+                //moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
                 SetMovable(true, new Vector3Int((int)x, (int)y, 0));
             }
 
@@ -243,7 +261,7 @@ public class MapManager : MonoBehaviour
                     x++;
                 }
                 y--;
-                moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+                //moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
                 SetMovable(true, new Vector3Int((int)x, (int)y, 0));
             }
 
@@ -251,7 +269,7 @@ public class MapManager : MonoBehaviour
             {
                 // go right
                 x++;
-                moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+                //moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
                 SetMovable(true, new Vector3Int((int)x, (int)y, 0));
             }
 
@@ -263,8 +281,25 @@ public class MapManager : MonoBehaviour
                     x++;
                 }
                 y++;
-                moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+                //moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
                 SetMovable(true, new Vector3Int((int)x, (int)y, 0));
+            }
+        }
+
+        // if any hex is occupied, make it not movable
+        for (int i = 0; i < tileCoordinates.Count; i++)
+        {
+            if (tileOccupancy[i] == true)
+            {
+                tileMovable[i] = false;
+            }
+        }
+
+        for (int i = 0; i < tileCoordinates.Count; i++)
+        {
+            if (tileMovable[i] == true)
+            {
+                moveHL.SetTile(tileCoordinates[i], moveHLTile);
             }
         }
     }
@@ -280,13 +315,5 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    // check whether the hex at mousePos is a valid hex to move to
-    //public bool CheckMoveHex(Vector3 mousePos)
-    //{
-    //    Debug.Log("mouse at " + mousePos);
-    //    Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(mousePos);
-    //    Vector3Int tileCoordinate = tilemap.WorldToCell(mouseWorldPos);
-
-    //    return GetMovableStatus(tileCoordinate);
-    //}
+   
 }

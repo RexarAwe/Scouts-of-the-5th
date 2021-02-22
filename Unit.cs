@@ -12,11 +12,12 @@ public class Unit : MonoBehaviour
     private int id;
     private int status; // friend or enemy
 
-    private float atk;
-    private float def;
-    private float init;
-    private float spd; // determines movement range
-    private float hp;
+    private int atk;
+    private int def;
+    private int init;
+    private int spd; // determines movement range
+    private int hp;
+    private int rng; // determines attack range
 
     private MapManager mapManager;
     private GameManager gameManager;
@@ -57,15 +58,22 @@ public class Unit : MonoBehaviour
 
                 if (mapManager.GetMovableStatus(tileCoordinate))
                 {
+                    mapManager.SetOccupancy(false, location);
+
                     // move the unit there
                     location = tileCoordinate;
                     transform.position = tilemap.CellToWorld(location);
+
+                    // change occupancy of tiles
+                    mapManager.SetOccupancy(true, location);
+
+                    movable = false;
                 }
 
                 //Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
                 //Vector3Int tileCoordinate = tilemap.WorldToCell(mouseWorldPos);
 
-                movable = false;
+                
             }
         }
 
@@ -81,7 +89,12 @@ public class Unit : MonoBehaviour
         //}
     }
 
-    public void initStats(int id_val, int atk_val = 0, int def_val = 0, int init_val = 0, int spd_val = 0, int hp_val = 0)
+    public void setMovable(bool val)
+    {
+        movable = val;
+    }
+
+    public void initStats(int id_val, int atk_val = 0, int def_val = 0, int init_val = 0, int spd_val = 0, int hp_val = 0, int rng_val = 0)
     {
         id = id_val;
         atk = atk_val;
