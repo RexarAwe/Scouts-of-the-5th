@@ -204,7 +204,7 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    // given the unit location, compute and display movable hexes
+    // given the unit location, compute and display movable hexes, also marks those hexes as movable
     public void CheckMovement(Vector3 unitLoc, float unitSpd)
     {
         Debug.Log("UnitLoc: " + unitLoc); // cell position
