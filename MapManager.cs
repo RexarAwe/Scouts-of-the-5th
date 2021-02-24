@@ -8,6 +8,7 @@ using UnityEngine.Tilemaps;
 public class MapManager : MonoBehaviour
 {
     private Tilemap tilemap;
+    private Tilemap moveHL; // to highlight movement range
 
     private Vector3 mouseWorldPos;
     private Vector3Int tileCoordinate;
@@ -25,12 +26,19 @@ public class MapManager : MonoBehaviour
     private Dictionary<TileBase, TileData> dataFromTiles;
 
     // store tilemap information needed for gameplay
-    [SerializeField] private List<Vector3> tileCoordinates;
+    [SerializeField] private List<Vector3Int> tileCoordinates;
     [SerializeField] private List<bool> tileOccupancy;
+    [SerializeField] private List<bool> tileMovable;
+
+    [SerializeField] TileBase moveHLTile;
+
+    
 
     void Start()
     {
         tilemap = GameObject.Find("Tilemap").GetComponent<Tilemap>();
+        moveHL = GameObject.Find("Move Indicator").GetComponent<Tilemap>();
+
         tilemap.CompressBounds();
         bounds = tilemap.cellBounds;
 
@@ -44,8 +52,9 @@ public class MapManager : MonoBehaviour
 
         for (int i = 0; i < allTiles.Length; i++)
         {
-            tileCoordinates.Add(new Vector3(x, y, z));
+            tileCoordinates.Add(new Vector3Int(x, y, z));
             tileOccupancy.Add(false);
+            tileMovable.Add(false);
 
             if (x < tilemap.origin.x + bounds.size.x - 1)
             {
@@ -69,9 +78,9 @@ public class MapManager : MonoBehaviour
             }
         }
 
-        Debug.Log(allTiles.Length);
-        Debug.Log(bounds.size.x + ", " + bounds.size.y);
-        Debug.Log("Tilemap origin: " + tilemap.origin);
+        // Debug.Log(allTiles.Length);
+        // Debug.Log(bounds.size.x + ", " + bounds.size.y);
+        // Debug.Log("Tilemap origin: " + tilemap.origin);
     }
 
     void Update()
@@ -80,46 +89,85 @@ public class MapManager : MonoBehaviour
         tileCoordinate = tilemap.WorldToCell(mouseWorldPos);
 
         // make sure within tilebox bounds, then create selection display at mouse location
-        if ((tileCoordinate.x >= bounds.x) && (tileCoordinate.x < (bounds.x + bounds.size.x)) && (tileCoordinate.y >= bounds.y) && (tileCoordinate.y < (bounds.y + bounds.size.y)))
-        {
-            //Debug.Log(tileCoordinate);
-            if (lastTileCoordinate != tileCoordinate && !selected) // check if moved since last time
-            {
-                Destroy(oldCursorTile);
-                Vector3 worldPos = tilemap.CellToWorld(tileCoordinate);
-                oldCursorTile = Instantiate(cursorTile, worldPos, transform.rotation);
-            }
-        }
+        //if ((tileCoordinate.x >= bounds.x) && (tileCoordinate.x < (bounds.x + bounds.size.x)) && (tileCoordinate.y >= bounds.y) && (tileCoordinate.y < (bounds.y + bounds.size.y)))
+        //{
+        //    //Debug.Log(tileCoordinate);
+        //    if (lastTileCoordinate != tileCoordinate && !selected) // check if moved since last time
+        //    {
+        //        Destroy(oldCursorTile);
+        //        Vector3 worldPos = tilemap.CellToWorld(tileCoordinate);
+        //        oldCursorTile = Instantiate(cursorTile, worldPos, transform.rotation);
+        //    }
+        //}
 
-        lastTileCoordinate = tileCoordinate; // remember last Tile coordinate to check
+        //lastTileCoordinate = tileCoordinate; // remember last Tile coordinate to check
 
-        
+
         if (Input.GetMouseButtonDown(0))
         {
             if ((tileCoordinate.x >= bounds.x) && (tileCoordinate.x < (bounds.x + bounds.size.x)) && (tileCoordinate.y >= bounds.y) && (tileCoordinate.y < (bounds.y + bounds.size.y)))
             {
-                // keep selection display at mouse location when clicked, right click to deselect
-                if (!selected)
-                {
-                    selected = true;
+                // get selected tile information
+                selectedTileCoordinate = tileCoordinate;
 
-                    // get selected tile information
-                    selectedTileCoordinate = tileCoordinate;
-
-                    TileBase selectedTile = tilemap.GetTile(selectedTileCoordinate);
-                    Debug.Log("Selected: " + dataFromTiles[selectedTile].terrain + ", " + selectedTileCoordinate);
-                }
+                TileBase selectedTile = tilemap.GetTile(selectedTileCoordinate);
+                Debug.Log("Selected: " + dataFromTiles[selectedTile].terrain + ", " + selectedTileCoordinate + ", Movable status: " + GetMovableStatus(selectedTileCoordinate));
             }
         }
 
-        if (Input.GetMouseButtonDown(1))
+        //if (Input.GetMouseButtonDown(0))
+        //{
+        //    if ((tileCoordinate.x >= bounds.x) && (tileCoordinate.x < (bounds.x + bounds.size.x)) && (tileCoordinate.y >= bounds.y) && (tileCoordinate.y < (bounds.y + bounds.size.y)))
+        //    {
+        //        // keep selection display at mouse location when clicked, right click to deselect
+        //        if (!selected)
+        //        {
+        //            selected = true;
+
+        //            // get selected tile information
+        //            selectedTileCoordinate = tileCoordinate;
+
+        //            TileBase selectedTile = tilemap.GetTile(selectedTileCoordinate);
+        //            Debug.Log("Selected: " + dataFromTiles[selectedTile].terrain + ", " + selectedTileCoordinate + ", Movable status: " + GetMovableStatus(selectedTileCoordinate));
+        //        }
+        //    }
+        //}
+
+        //if (Input.GetMouseButtonDown(1))
+        //{
+        //    if (selected)
+        //    {
+        //        selected = false;
+        //        // Debug.Log("Deselected");
+        //    }
+        //}
+    }
+
+    // returns moveable status
+    public bool GetMovableStatus(Vector3Int location)
+    {
+        for (int i = 0; i < tileCoordinates.Count; i++)
         {
-            if (selected)
+            if (tileCoordinates[i] == location)
             {
-                selected = false;
-                // Debug.Log("Deselected");
+                return tileMovable[i]; ;
             }
         }
+
+        return false;
+    }
+
+    public bool GetOccupancyStatus(Vector3Int location)
+    {
+        for (int i = 0; i < tileCoordinates.Count; i++)
+        {
+            if (tileCoordinates[i] == location)
+            {
+                return tileOccupancy[i]; ;
+            }
+        }
+
+        return false;
     }
 
     public void SetOccupancy(bool val, int index)
@@ -127,14 +175,145 @@ public class MapManager : MonoBehaviour
         tileOccupancy[index] = val;
     }
 
-    public void SetOccupancy(bool val, Vector3 location) 
+    public void SetOccupancy(bool val, Vector3Int location) 
     {
+        // Debug.Log("location to search: " + location);
+        // Debug.Log("tileCoordinates count = " + tileCoordinates.Count);
         for(int i = 0; i < tileCoordinates.Count; i++)
         {
+            // Debug.Log("WHAT?");
+            // Debug.Log("comparing to index " + i + " coordinates " + tileCoordinates[i]);
             if(tileCoordinates[i] == location)
             {
+                // Debug.Log("Setting occupancy at index " + i);
                 tileOccupancy[i] = val;
             }
         }
     }
+
+    private void SetMovable(bool val, Vector3Int location)
+    {
+        for (int i = 0; i < tileCoordinates.Count; i++)
+        {
+            // Debug.Log("comparing to index " + i + " coordinates " + tileCoordinates[i]);
+            if (tileCoordinates[i] == location)
+            {
+                // Debug.Log("Setting occupancy at index " + i);
+                tileMovable[i] = val;
+            }
+        }
+    }
+
+    // given the unit location, compute and display movable hexes, also marks those hexes as movable
+    public void CheckMovement(Vector3 unitLoc, float unitSpd)
+    {
+        Debug.Log("UnitLoc: " + unitLoc); // cell position
+
+        //top right (+1 to y from unitLoc, also +1 to x if going from odd y to even y)
+        float x = unitLoc.x;
+        float y = unitLoc.y;
+
+        // moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+        
+        // go around the unitLoc
+        for (int i = 1; i <= unitSpd; i++)
+        {
+            x = unitLoc.x + i;
+            y = unitLoc.y;
+
+            for (int j = 0; j < i; j++)
+            {
+                // go up left
+                if (Mathf.Abs(y) % 2 == 0) // current y is even 
+                {
+                    x--;
+                }
+                y++;
+                //moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+                SetMovable(true, new Vector3Int((int)x, (int)y, 0));
+            }
+
+            for (int j = 0; j < i; j++)
+            {
+                // go left
+                x--;
+                //moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+                SetMovable(true, new Vector3Int((int)x, (int)y, 0));
+            }
+
+            for (int j = 0; j < i; j++)
+            {
+                // go down left
+                if (Mathf.Abs(y) % 2 == 0) // current y is even 
+                {
+                    x--;
+                }
+                y--;
+                //moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+                SetMovable(true, new Vector3Int((int)x, (int)y, 0));
+            }
+
+            for (int j = 0; j < i; j++)
+            {
+                // go down right
+                if (Mathf.Abs(y) % 2 == 1) // current y is odd 
+                {
+                    x++;
+                }
+                y--;
+                //moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+                SetMovable(true, new Vector3Int((int)x, (int)y, 0));
+            }
+
+            for (int j = 0; j < i; j++)
+            {
+                // go right
+                x++;
+                //moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+                SetMovable(true, new Vector3Int((int)x, (int)y, 0));
+            }
+
+            for (int j = 0; j < i; j++)
+            {
+                // go up right
+                if (Mathf.Abs(y) % 2 == 1) // current y is odd 
+                {
+                    x++;
+                }
+                y++;
+                //moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+                SetMovable(true, new Vector3Int((int)x, (int)y, 0));
+            }
+        }
+
+        // if any hex is occupied, make it not movable
+        for (int i = 0; i < tileCoordinates.Count; i++)
+        {
+            if (tileOccupancy[i] == true)
+            {
+                tileMovable[i] = false;
+            }
+        }
+
+        for (int i = 0; i < tileCoordinates.Count; i++)
+        {
+            if (tileMovable[i] == true)
+            {
+                moveHL.SetTile(tileCoordinates[i], moveHLTile);
+            }
+        }
+    }
+
+    public void ClearHLTiles()
+    {
+        moveHL.ClearAllTiles();
+
+        // reset all movable status to false
+        for (int i = 0; i < tileMovable.Count; i++)
+        {
+            tileMovable[i] = false;
+        }
+    }
+
+   
 }
