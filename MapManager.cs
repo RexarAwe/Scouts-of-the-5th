@@ -8,7 +8,8 @@ using UnityEngine.Tilemaps;
 public class MapManager : MonoBehaviour
 {
     private Tilemap tilemap;
-    private Tilemap moveHL; // to highlight movement range
+    private Tilemap moveHL; // tilemap to highlight movement range
+    private Tilemap attackHL; // tilemap to highlight attack range
 
     private Vector3 mouseWorldPos;
     private Vector3Int tileCoordinate;
@@ -29,13 +30,17 @@ public class MapManager : MonoBehaviour
     [SerializeField] private List<Vector3Int> tileCoordinates;
     [SerializeField] private List<bool> tileOccupancy;
     [SerializeField] private List<bool> tileMovable;
+    [SerializeField] private List<bool> tileAtkable;
 
     [SerializeField] TileBase moveHLTile;
+    [SerializeField] TileBase atkHLTile;
 
-    
+    private GameManager gameManager;
 
     void Start()
     {
+        gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
+
         tilemap = GameObject.Find("Tilemap").GetComponent<Tilemap>();
         moveHL = GameObject.Find("Move Indicator").GetComponent<Tilemap>();
 
@@ -55,6 +60,7 @@ public class MapManager : MonoBehaviour
             tileCoordinates.Add(new Vector3Int(x, y, z));
             tileOccupancy.Add(false);
             tileMovable.Add(false);
+            tileAtkable.Add(false);
 
             if (x < tilemap.origin.x + bounds.size.x - 1)
             {
@@ -111,7 +117,8 @@ public class MapManager : MonoBehaviour
                 selectedTileCoordinate = tileCoordinate;
 
                 TileBase selectedTile = tilemap.GetTile(selectedTileCoordinate);
-                Debug.Log("Selected: " + dataFromTiles[selectedTile].terrain + ", " + selectedTileCoordinate + ", Movable status: " + GetMovableStatus(selectedTileCoordinate));
+                //Debug.Log("Selected: " + dataFromTiles[selectedTile].terrain + ", " + selectedTileCoordinate + ", Movable status: " + GetMovableStatus(selectedTileCoordinate));
+                Debug.Log("Selected: " + dataFromTiles[selectedTile].terrain + ", " + selectedTileCoordinate + ", Atkable status: " + GetAtkableStatus(selectedTileCoordinate));
             }
         }
 
@@ -157,6 +164,19 @@ public class MapManager : MonoBehaviour
         return false;
     }
 
+    public bool GetAtkableStatus(Vector3Int location)
+    {
+        for (int i = 0; i < tileCoordinates.Count; i++)
+        {
+            if (tileCoordinates[i] == location)
+            {
+                return tileAtkable[i]; ;
+            }
+        }
+
+        return false;
+    }
+
     public bool GetOccupancyStatus(Vector3Int location)
     {
         for (int i = 0; i < tileCoordinates.Count; i++)
@@ -195,16 +215,25 @@ public class MapManager : MonoBehaviour
     {
         for (int i = 0; i < tileCoordinates.Count; i++)
         {
-            // Debug.Log("comparing to index " + i + " coordinates " + tileCoordinates[i]);
             if (tileCoordinates[i] == location)
             {
-                // Debug.Log("Setting occupancy at index " + i);
                 tileMovable[i] = val;
             }
         }
     }
 
-    // given the unit location, compute and display movable hexes, also marks those hexes as movable
+    private void SetAtkable(bool val, Vector3Int location)
+    {
+        for (int i = 0; i < tileCoordinates.Count; i++)
+        {
+            if (tileCoordinates[i] == location)
+            {
+                tileAtkable[i] = val;
+            }
+        }
+    }
+
+    // given the unit location and its spd stat, compute and display movable hexes, also marks those hexes as movable
     public void CheckMovement(Vector3 unitLoc, float unitSpd)
     {
         Debug.Log("UnitLoc: " + unitLoc); // cell position
@@ -229,7 +258,6 @@ public class MapManager : MonoBehaviour
                     x--;
                 }
                 y++;
-                //moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
                 SetMovable(true, new Vector3Int((int)x, (int)y, 0));
             }
 
@@ -237,7 +265,6 @@ public class MapManager : MonoBehaviour
             {
                 // go left
                 x--;
-                //moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
                 SetMovable(true, new Vector3Int((int)x, (int)y, 0));
             }
 
@@ -249,7 +276,6 @@ public class MapManager : MonoBehaviour
                     x--;
                 }
                 y--;
-                //moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
                 SetMovable(true, new Vector3Int((int)x, (int)y, 0));
             }
 
@@ -261,7 +287,6 @@ public class MapManager : MonoBehaviour
                     x++;
                 }
                 y--;
-                //moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
                 SetMovable(true, new Vector3Int((int)x, (int)y, 0));
             }
 
@@ -269,7 +294,6 @@ public class MapManager : MonoBehaviour
             {
                 // go right
                 x++;
-                //moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
                 SetMovable(true, new Vector3Int((int)x, (int)y, 0));
             }
 
@@ -281,7 +305,6 @@ public class MapManager : MonoBehaviour
                     x++;
                 }
                 y++;
-                //moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
                 SetMovable(true, new Vector3Int((int)x, (int)y, 0));
             }
         }
@@ -295,6 +318,7 @@ public class MapManager : MonoBehaviour
             }
         }
 
+        // highlight movable tiles
         for (int i = 0; i < tileCoordinates.Count; i++)
         {
             if (tileMovable[i] == true)
@@ -308,12 +332,150 @@ public class MapManager : MonoBehaviour
     {
         moveHL.ClearAllTiles();
 
-        // reset all movable status to false
+        // reset all movable and atkable status to false
         for (int i = 0; i < tileMovable.Count; i++)
         {
             tileMovable[i] = false;
         }
+
+        for (int i = 0; i < tileAtkable.Count; i++)
+        {
+            tileAtkable[i] = false;
+        }
     }
 
-   
+    public void CheckAttack(Vector3 unitLoc, float unitRng)
+    {
+        // Debug.Log("UnitLoc: " + unitLoc); // cell position
+
+        //top right (+1 to y from unitLoc, also +1 to x if going from odd y to even y)
+        float x = unitLoc.x;
+        float y = unitLoc.y;
+
+        // moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
+
+        // go around the unitLoc to check if any enemies are in range, if enemy found, get its information and make that hex clickable for attack
+        for (int i = 1; i <= unitRng; i++)
+        {
+            x = unitLoc.x + i;
+            y = unitLoc.y;
+
+            for (int j = 0; j < i; j++)
+            {
+                // go up left
+                if (Mathf.Abs(y) % 2 == 0) // current y is even 
+                {
+                    x--;
+                }
+                y++;
+
+                Debug.Log("Check attack 1: Unit Count: " + gameManager.units.Count);
+
+                // iterate through unit list to check if any of them are on the hex
+                for (int k = 0; k < gameManager.units.Count; k++)
+                {
+                    UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
+                    if (new Vector3Int((int)x, (int)y, 0) == movementUnit.getLoc())
+                    {
+                        SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
+                    }
+                }
+            }
+
+            for (int j = 0; j < i; j++)
+            {
+                // go left
+                x--;
+
+                for (int k = 0; k < gameManager.units.Count; k++)
+                {
+                    UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
+                    if (new Vector3Int((int)x, (int)y, 0) == movementUnit.getLoc())
+                    {
+                        SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
+                    }
+                }
+            }
+
+            for (int j = 0; j < i; j++)
+            {
+                // go down left
+                if (Mathf.Abs(y) % 2 == 0) // current y is even 
+                {
+                    x--;
+                }
+                y--;
+
+                for (int k = 0; k < gameManager.units.Count; k++)
+                {
+                    UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
+                    if (new Vector3Int((int)x, (int)y, 0) == movementUnit.getLoc())
+                    {
+                        SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
+                    }
+                }
+            }
+
+            for (int j = 0; j < i; j++)
+            {
+                // go down right
+                if (Mathf.Abs(y) % 2 == 1) // current y is odd 
+                {
+                    x++;
+                }
+                y--;
+
+                for (int k = 0; k < gameManager.units.Count; k++)
+                {
+                    UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
+                    if (new Vector3Int((int)x, (int)y, 0) == movementUnit.getLoc())
+                    {
+                        SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
+                    }
+                }
+            }
+
+            for (int j = 0; j < i; j++)
+            {
+                // go right
+                x++;
+
+                for (int k = 0; k < gameManager.units.Count; k++)
+                {
+                    UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
+                    if (new Vector3Int((int)x, (int)y, 0) == movementUnit.getLoc())
+                    {
+                        SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
+                    }
+                }
+            }
+
+            for (int j = 0; j < i; j++)
+            {
+                // go up right
+                if (Mathf.Abs(y) % 2 == 1) // current y is odd 
+                {
+                    x++;
+                }
+                y++;
+
+                for (int k = 0; k < gameManager.units.Count; k++)
+                {
+                    UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
+                    if (new Vector3Int((int)x, (int)y, 0) == movementUnit.getLoc())
+                    {
+                        SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < tileCoordinates.Count; i++)
+        {
+            if (tileAtkable[i] == true)
+            {
+                moveHL.SetTile(tileCoordinates[i], atkHLTile);
+            }
+        }
+    }
 }

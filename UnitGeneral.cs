@@ -1,4 +1,4 @@
-﻿// Unit Initiative that determines turn order, status effects and hp, and Tracking Component (GameManager tracks unit existence and status)
+﻿// Unit Initiative that determines turn order, status effects, hp (still alive), exp, and Tracking Component (GameManager tracks unit existence and status)
 
 using System.Collections;
 using System.Collections.Generic;
@@ -13,9 +13,10 @@ public class UnitGeneral : MonoBehaviour
     protected int hp;
 
     // initialize general stats all units should have
-    public void initStats(int id_val, int init_val = 0, int hp_val = 0)
+    public void initGenStats(int id_val, int status_val = 0, int init_val = 0, int hp_val = 0)
     {
         id = id_val;
+        status = status_val; // 0 for player, 1 for enemy
         init = init_val;
         hp = hp_val;
     }
@@ -24,6 +25,12 @@ public class UnitGeneral : MonoBehaviour
     public void Focus()
     {
         Camera.main.transform.position = new Vector3(gameObject.transform.position.x, gameObject.transform.position.y, Camera.main.transform.position.z);
+    }
+
+    // adjust hp based on dmg received, kill unit if hp reaches 0
+    public void TakeDmg(int dmg)
+    {
+
     }
 
     public int GetInit()
@@ -41,4 +48,8 @@ public class UnitGeneral : MonoBehaviour
         return id;
     }
 
+    public int GetStatus()
+    {
+        return status;
+    }
 }

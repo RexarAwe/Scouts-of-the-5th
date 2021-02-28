@@ -35,28 +35,35 @@ public class GameManager : MonoBehaviour
         GameObject unit;
         UnitGeneral generalUnit;
         UnitMovement movementUnit;
+        UnitAttack attackUnit;
 
         unit = Instantiate(penguinViking, new Vector3(0, 0, 0), transform.rotation);
         generalUnit = unit.GetComponent<UnitGeneral>();
-        generalUnit.initStats(unitID, 3, 10);
+        generalUnit.initGenStats(unitID, 0, 2, 10);
         movementUnit = unit.GetComponent<UnitMovement>();
-        movementUnit.SetUnitSpd(1);
+        movementUnit.SetUnitSpd(2);
+        attackUnit = unit.GetComponent<UnitAttack>();
+        attackUnit.setAtkStats(10, 1, 10);
         AddUnit(unit);
         unitID++;
 
         unit = Instantiate(penguinViking, new Vector3(3f, 0f, 0), transform.rotation);
         generalUnit = unit.GetComponent<UnitGeneral>();
-        generalUnit.initStats(unitID, 1, 10);
+        generalUnit.initGenStats(unitID, 0, 2, 10);
         movementUnit = unit.GetComponent<UnitMovement>();
         movementUnit.SetUnitSpd(2);
+        attackUnit = unit.GetComponent<UnitAttack>();
+        attackUnit.setAtkStats(10, 1, 10);
         AddUnit(unit);
         unitID++;
 
         unit = Instantiate(penguinViking, new Vector3(0, -3.5f, 0), transform.rotation);
         generalUnit = unit.GetComponent<UnitGeneral>();
-        generalUnit.initStats(unitID, 2, 10);
+        generalUnit.initGenStats(unitID, 1, 3, 10);
         movementUnit = unit.GetComponent<UnitMovement>();
         movementUnit.SetUnitSpd(3);
+        attackUnit = unit.GetComponent<UnitAttack>();
+        attackUnit.setAtkStats(10, 1, 10);
         AddUnit(unit);
         unitID++;
     }
@@ -88,6 +95,7 @@ public class GameManager : MonoBehaviour
 
         UnitGeneral generalUnit = units[turn].GetComponent<UnitGeneral>();
         UnitMovement movementUnit = units[turn].GetComponent<UnitMovement>();
+        UnitAttack attackUnit = units[turn].GetComponent<UnitAttack>();
 
         Debug.Log("Unit: " + generalUnit.GetID() + "'s turn");
 
@@ -96,6 +104,7 @@ public class GameManager : MonoBehaviour
 
         // allow movement
         movementUnit.Move();
+        attackUnit.ShowAttacks();
 
         startButton.SetActive(false);
         endButton.SetActive(true);
@@ -121,5 +130,21 @@ public class GameManager : MonoBehaviour
         }
 
         PlayTurn();
+    }
+
+    // return the unit occupying the location, if not occupied, print warning and return null
+    public GameObject GetUnit(Vector3Int location)
+    {
+        // go through each unit to find whether any unit shares the same location
+        for(int i = 0; i < units.Count; i++)
+        {
+            UnitMovement movementUnit = units[i].GetComponent<UnitMovement>();
+            if(movementUnit.getLoc() == location)
+            {
+                return units[i];
+            }
+        }
+
+        return null;
     }
 }
