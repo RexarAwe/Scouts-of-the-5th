@@ -16,7 +16,6 @@ public class UnitMovement : MonoBehaviour
 
     Tilemap tilemap;
 
-    // Start is called before the first frame update
     void Start()
     {
         mapManager = GameObject.Find("Map Manager").GetComponent<MapManager>();
@@ -55,7 +54,7 @@ public class UnitMovement : MonoBehaviour
         }
     }
 
-    // focuses camera on the current turn's unit
+    // allows movement for the unit
     public void Move()
     {
         // "highlight" movement range
@@ -65,7 +64,6 @@ public class UnitMovement : MonoBehaviour
         movable = true;
     }
 
-    // movement
     public void setMovable(bool val)
     {
         movable = val;
@@ -74,5 +72,15 @@ public class UnitMovement : MonoBehaviour
     public void SetUnitSpd(int val)
     {
         spd = val;
+    }
+
+    public int getSpd()
+    {
+        return spd;
+    }
+
+    public Vector3Int getLoc()
+    {
+        return location;
     }
 }
