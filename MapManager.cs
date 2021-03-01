@@ -117,8 +117,19 @@ public class MapManager : MonoBehaviour
                 selectedTileCoordinate = tileCoordinate;
 
                 TileBase selectedTile = tilemap.GetTile(selectedTileCoordinate);
-                //Debug.Log("Selected: " + dataFromTiles[selectedTile].terrain + ", " + selectedTileCoordinate + ", Movable status: " + GetMovableStatus(selectedTileCoordinate));
-                Debug.Log("Selected: " + dataFromTiles[selectedTile].terrain + ", " + selectedTileCoordinate + ", Atkable status: " + GetAtkableStatus(selectedTileCoordinate));
+                // Debug.Log("Selected: " + dataFromTiles[selectedTile].terrain + ", " + selectedTileCoordinate + ", Movable status: " + GetMovableStatus(selectedTileCoordinate) + ", Atkable status: " + GetAtkableStatus(selectedTileCoordinate));
+            }
+        }
+
+        if (Input.GetMouseButtonDown(1))
+        {
+            if ((tileCoordinate.x >= bounds.x) && (tileCoordinate.x < (bounds.x + bounds.size.x)) && (tileCoordinate.y >= bounds.y) && (tileCoordinate.y < (bounds.y + bounds.size.y)))
+            {
+                // get selected tile information
+                selectedTileCoordinate = tileCoordinate;
+
+                TileBase selectedTile = tilemap.GetTile(selectedTileCoordinate);
+                Debug.Log("Selected: " + dataFromTiles[selectedTile].terrain + ", " + selectedTileCoordinate + ", Movable status: " + GetMovableStatus(selectedTileCoordinate) + ", Atkable status: " + GetAtkableStatus(selectedTileCoordinate));
             }
         }
 
@@ -236,14 +247,13 @@ public class MapManager : MonoBehaviour
     // given the unit location and its spd stat, compute and display movable hexes, also marks those hexes as movable
     public void CheckMovement(Vector3 unitLoc, float unitSpd)
     {
-        Debug.Log("UnitLoc: " + unitLoc); // cell position
+        // Debug.Log("UnitLoc: " + unitLoc); // cell position
 
-        //top right (+1 to y from unitLoc, also +1 to x if going from odd y to even y)
         float x = unitLoc.x;
         float y = unitLoc.y;
 
         // moveHL.SetTile(new Vector3Int((int)x, (int)y, 0), moveHLTile);
-        
+
         // go around the unitLoc
         for (int i = 1; i <= unitSpd; i++)
         {
@@ -344,7 +354,7 @@ public class MapManager : MonoBehaviour
         }
     }
 
-    public void CheckAttack(Vector3 unitLoc, float unitRng)
+    public void CheckAttack(Vector3 unitLoc, float unitRng, int unitStatus)
     {
         // Debug.Log("UnitLoc: " + unitLoc); // cell position
 
@@ -369,13 +379,12 @@ public class MapManager : MonoBehaviour
                 }
                 y++;
 
-                Debug.Log("Check attack 1: Unit Count: " + gameManager.units.Count);
-
                 // iterate through unit list to check if any of them are on the hex
                 for (int k = 0; k < gameManager.units.Count; k++)
                 {
                     UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
-                    if (new Vector3Int((int)x, (int)y, 0) == movementUnit.getLoc())
+                    UnitGeneral generalUnit = gameManager.units[k].GetComponent<UnitGeneral>();
+                    if ((new Vector3Int((int)x, (int)y, 0) == movementUnit.GetLoc()) && (generalUnit.GetStatus() != unitStatus))
                     {
                         SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
                     }
@@ -390,7 +399,8 @@ public class MapManager : MonoBehaviour
                 for (int k = 0; k < gameManager.units.Count; k++)
                 {
                     UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
-                    if (new Vector3Int((int)x, (int)y, 0) == movementUnit.getLoc())
+                    UnitGeneral generalUnit = gameManager.units[k].GetComponent<UnitGeneral>();
+                    if ((new Vector3Int((int)x, (int)y, 0) == movementUnit.GetLoc()) && (generalUnit.GetStatus() != unitStatus))
                     {
                         SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
                     }
@@ -409,7 +419,8 @@ public class MapManager : MonoBehaviour
                 for (int k = 0; k < gameManager.units.Count; k++)
                 {
                     UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
-                    if (new Vector3Int((int)x, (int)y, 0) == movementUnit.getLoc())
+                    UnitGeneral generalUnit = gameManager.units[k].GetComponent<UnitGeneral>();
+                    if ((new Vector3Int((int)x, (int)y, 0) == movementUnit.GetLoc()) && (generalUnit.GetStatus() != unitStatus))
                     {
                         SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
                     }
@@ -428,7 +439,8 @@ public class MapManager : MonoBehaviour
                 for (int k = 0; k < gameManager.units.Count; k++)
                 {
                     UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
-                    if (new Vector3Int((int)x, (int)y, 0) == movementUnit.getLoc())
+                    UnitGeneral generalUnit = gameManager.units[k].GetComponent<UnitGeneral>();
+                    if ((new Vector3Int((int)x, (int)y, 0) == movementUnit.GetLoc()) && (generalUnit.GetStatus() != unitStatus))
                     {
                         SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
                     }
@@ -443,7 +455,8 @@ public class MapManager : MonoBehaviour
                 for (int k = 0; k < gameManager.units.Count; k++)
                 {
                     UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
-                    if (new Vector3Int((int)x, (int)y, 0) == movementUnit.getLoc())
+                    UnitGeneral generalUnit = gameManager.units[k].GetComponent<UnitGeneral>();
+                    if ((new Vector3Int((int)x, (int)y, 0) == movementUnit.GetLoc()) && (generalUnit.GetStatus() != unitStatus))
                     {
                         SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
                     }
@@ -462,7 +475,8 @@ public class MapManager : MonoBehaviour
                 for (int k = 0; k < gameManager.units.Count; k++)
                 {
                     UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
-                    if (new Vector3Int((int)x, (int)y, 0) == movementUnit.getLoc())
+                    UnitGeneral generalUnit = gameManager.units[k].GetComponent<UnitGeneral>();
+                    if ((new Vector3Int((int)x, (int)y, 0) == movementUnit.GetLoc()) && (generalUnit.GetStatus() != unitStatus))
                     {
                         SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
                     }

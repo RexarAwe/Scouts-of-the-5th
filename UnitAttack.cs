@@ -11,7 +11,12 @@ public class UnitAttack : MonoBehaviour
     private int rng;
     private int def;
 
-    private bool atkAble = false;
+    // private int dmg; // OR
+    private int dmgNum; //'1'd6+1
+    private int dmgDice; //1d'6'+1
+    private int dmgMod; // 1d6+'1'
+
+    [SerializeField] private bool atkAble = false;
 
     private GameManager gameManager;
     private MapManager mapManager;
@@ -30,7 +35,7 @@ public class UnitAttack : MonoBehaviour
 
     protected void Update()
     {
-        // onclick, if tile is movable, moves unit there and updates location
+        // onclick, if tile is atkable, perform an attack on the target
         if (Input.GetMouseButtonDown(0))
         {
             if (atkAble)
@@ -43,7 +48,7 @@ public class UnitAttack : MonoBehaviour
                     // perform attack and defend rolls
                     if(gameManager.GetUnit(tileCoordinate))
                     {
-                        Attack(gameManager.GetUnit(tileCoordinate));
+                        RollAttack(gameManager.GetUnit(tileCoordinate));
                         atkAble = false;
                     }
                 }
@@ -51,22 +56,31 @@ public class UnitAttack : MonoBehaviour
         }
     }
 
-    public void setAtkStats(int atk_val, int rng_val, int def_val)
+    public void SetAtkStats(int atk_val, int rng_val, int def_val)
     {
         atk = atk_val;
         rng = rng_val;
         def = def_val;
     }
 
-    // Given a location, indicate all enemies on tiles that can be attacked
-    public void ShowAttacks()
+    public void SetDmgStats(int num_val, int dice_val, int mod_val)
     {
-        mapManager.CheckAttack(movementUnit.getLoc(), rng);
+        dmgNum = num_val; 
+        dmgDice = dice_val; 
+        dmgMod = mod_val;
+}
+
+    // Given a location, indicate all enemies on tiles that can be attacked
+    public void Attack()
+    {
+        UnitGeneral generalUnit = gameObject.GetComponent<UnitGeneral>();
+        mapManager.CheckAttack(movementUnit.GetLoc(), rng, generalUnit.GetStatus());
+        // Debug.Log("HERE EVERYTURN");
         atkAble = true;
     }
 
     // roll hit and dmg, then adjust hp accordingly
-    private void Attack(GameObject target)
+    private void RollAttack(GameObject target)
     {
         //  is a hit and crit, nat 0 and 1 is an automatic miss
 
@@ -74,37 +88,60 @@ public class UnitAttack : MonoBehaviour
         //Debug.Log(generalUnit.GetID());
 
         UnitAttack attackUnit = target.GetComponent<UnitAttack>();
-        Debug.Log("Target ATK: " + attackUnit.getAtk());
+        // Debug.Log("Target ATK: " + attackUnit.getAtk());
         
         int hitPct = 50 + atk - attackUnit.getDef();
 
-        int roll = Random.Range(0, 100);
+        int roll = Random.Range(0, 100); // roll a 1d100
 
-        Debug.Log("Roll: " + roll);
+        // Debug.Log("Roll: " + roll);
 
         if (roll >= 98) // nat 98 and 99 is automatic miss
         {
             // do nothing since miss
+            Debug.Log("CRITICAL MISS");
         }
         else if (roll <= 1) // automatic hit and crit (deal double dmg)
         {
-            InflictDmg(target);
+            Debug.Log("CRIT");
+            InflictDmg(target, RollDmg(dmgNum, dmgDice, dmgMod), true);
         }
         else if (roll <= hitPct) // roll dmg and adjust target hp
         {
-            InflictDmg(target);
+            Debug.Log("HIT");
+            InflictDmg(target, RollDmg(dmgNum, dmgDice, dmgMod), false);
+        }
+        else
+        {
+            Debug.Log("MISS");
         }
     }
 
     // roll dmg e.g. 1d6+2, 1 is num, dice is 6, mod is 2
     private int RollDmg(int num, int dice, int mod)
     {
-        return 5;
+        int total = 0;
+
+        for (int i = 1; i < num; i++)
+        {
+            total += Random.Range(1, dice + 1);
+        }
+
+        return total += mod;
     }
 
-    private void InflictDmg(GameObject target)
+    private void InflictDmg(GameObject target, int dmg, bool crit)
     {
+        UnitGeneral generalUnit = target.GetComponent<UnitGeneral>();
 
+        if(crit)
+        {
+            dmg = dmg * 2;
+        }
+
+        generalUnit.TakeDmg(dmg);
+
+        Debug.Log("Inflicted " + dmg + " to target.");
     }
 
     public int getAtk()

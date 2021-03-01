@@ -17,8 +17,15 @@ public class GameManager : MonoBehaviour
 
     private GameObject startButton;
     private GameObject endButton;
+    private GameObject MoveButton;
+    private GameObject AttackButton;
 
     private GameObject currentUnit;
+
+    // current unit components, for use with buttons
+    UnitGeneral generalUnit;
+    UnitMovement movementUnit;
+    UnitAttack attackUnit;
 
     void Start()
     {
@@ -26,44 +33,37 @@ public class GameManager : MonoBehaviour
 
         startButton = GameObject.Find("Start Button");
         endButton = GameObject.Find("ET Button");
+        MoveButton = GameObject.Find("Move Button");
+        AttackButton = GameObject.Find("Attack Button");
+
         startButton.SetActive(false);
         endButton.SetActive(false);
+        MoveButton.SetActive(false);
+        AttackButton.SetActive(false);
     }
 
     public void SpawnSampleUnits()
+    {
+        SpawnRecruit(new Vector3(0, 0, 0), 0);
+        SpawnRecruit(new Vector3(3f, 0, 0), 1);
+        SpawnRecruit(new Vector3(0, -3.5f, 0), 1);
+    }
+
+    private void SpawnRecruit(Vector3 location, int allegiance)
     {
         GameObject unit;
         UnitGeneral generalUnit;
         UnitMovement movementUnit;
         UnitAttack attackUnit;
 
-        unit = Instantiate(penguinViking, new Vector3(0, 0, 0), transform.rotation);
+        unit = Instantiate(penguinViking, location, transform.rotation);
         generalUnit = unit.GetComponent<UnitGeneral>();
-        generalUnit.initGenStats(unitID, 0, 2, 10);
+        generalUnit.initGenStats(unitID, allegiance, 2, 10);
         movementUnit = unit.GetComponent<UnitMovement>();
         movementUnit.SetUnitSpd(2);
         attackUnit = unit.GetComponent<UnitAttack>();
-        attackUnit.setAtkStats(10, 1, 10);
-        AddUnit(unit);
-        unitID++;
-
-        unit = Instantiate(penguinViking, new Vector3(3f, 0f, 0), transform.rotation);
-        generalUnit = unit.GetComponent<UnitGeneral>();
-        generalUnit.initGenStats(unitID, 0, 2, 10);
-        movementUnit = unit.GetComponent<UnitMovement>();
-        movementUnit.SetUnitSpd(2);
-        attackUnit = unit.GetComponent<UnitAttack>();
-        attackUnit.setAtkStats(10, 1, 10);
-        AddUnit(unit);
-        unitID++;
-
-        unit = Instantiate(penguinViking, new Vector3(0, -3.5f, 0), transform.rotation);
-        generalUnit = unit.GetComponent<UnitGeneral>();
-        generalUnit.initGenStats(unitID, 1, 3, 10);
-        movementUnit = unit.GetComponent<UnitMovement>();
-        movementUnit.SetUnitSpd(3);
-        attackUnit = unit.GetComponent<UnitAttack>();
-        attackUnit.setAtkStats(10, 1, 10);
+        attackUnit.SetAtkStats(10, 1, 10);
+        attackUnit.SetDmgStats(2, 5, 0);
         AddUnit(unit);
         unitID++;
     }
@@ -71,6 +71,11 @@ public class GameManager : MonoBehaviour
     public void AddUnit(GameObject unit) // add the unit to the unit tracking list
     {
         units.Add(unit);
+    }
+
+    public void RemoveUnit(GameObject unit)
+    {
+        
     }
 
     // generate the units in battle and setup turns
@@ -86,41 +91,69 @@ public class GameManager : MonoBehaviour
 
         Destroy(GameObject.Find("Init Button")); 
         startButton.SetActive(true);
+
+        currentUnit = units[turn];
     }
 
     // Allow the current unit to perform actions on its turn
     public void PlayTurn()
     {
-        currentUnit = units[turn]; // keep track of the current turn's unit
+        generalUnit = currentUnit.GetComponent<UnitGeneral>();
+        movementUnit = currentUnit.GetComponent<UnitMovement>();
+        attackUnit = currentUnit.GetComponent<UnitAttack>();
 
-        UnitGeneral generalUnit = units[turn].GetComponent<UnitGeneral>();
-        UnitMovement movementUnit = units[turn].GetComponent<UnitMovement>();
-        UnitAttack attackUnit = units[turn].GetComponent<UnitAttack>();
+        generalUnit.SetActions(2); // set the unit's action capacity for the turn
 
-        Debug.Log("Unit: " + generalUnit.GetID() + "'s turn");
+        Debug.Log("Unit: " + generalUnit.GetID() + "'s turn, HP: " + generalUnit.GetHP());
 
         // focus camera on unit
         generalUnit.Focus();
 
-        // allow movement
-        movementUnit.Move();
-        attackUnit.ShowAttacks();
+        // allow for actions
+        TakeAction();
+        //movementUnit.Move();
+        //attackUnit.Attack();
 
         startButton.SetActive(false);
         endButton.SetActive(true);
     }
 
+    // allow unit to take an action and adjust remaining actions
+    public void TakeAction()
+    {
+        MoveButton.SetActive(true);
+        AttackButton.SetActive(true);
+
+        // adjust action points
+    }
+
+    public void MoveAction()
+    {
+        movementUnit.Move();
+    }
+
+    public void AttackAction()
+    {
+        attackUnit.Attack();
+    }
+
     // ends the current turn to move on to the next unit
     public void EndTurn()
     {
+        MoveButton.SetActive(false);
+        AttackButton.SetActive(false);
+
         mapManager.ClearHLTiles();
 
         // disallow movement of the unit before moving on
-        UnitMovement movementUnit = units[turn].GetComponent<UnitMovement>();
-        movementUnit.setMovable(false);
+        UnitMovement movementUnit = currentUnit.GetComponent<UnitMovement>();
+        movementUnit.SetMovable(false);
+
+        // remove any dead units
+        units = units.Where(unit => unit != null).ToList();
 
         // go to the next unit's turn
-        if (turn == units.Count - 1)
+        if (turn >= units.Count - 1)
         {
             turn = 0;
         }
@@ -128,6 +161,8 @@ public class GameManager : MonoBehaviour
         {
             turn++;
         }
+
+        currentUnit = units[turn]; // keep track of the current turn's unit
 
         PlayTurn();
     }
@@ -139,7 +174,7 @@ public class GameManager : MonoBehaviour
         for(int i = 0; i < units.Count; i++)
         {
             UnitMovement movementUnit = units[i].GetComponent<UnitMovement>();
-            if(movementUnit.getLoc() == location)
+            if(movementUnit.GetLoc() == location)
             {
                 return units[i];
             }

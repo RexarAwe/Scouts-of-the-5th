@@ -11,14 +11,16 @@ public class UnitGeneral : MonoBehaviour
     protected int status; // friend or enemy
     protected int init;
     protected int hp;
+    protected int actions;
 
     // initialize general stats all units should have
-    public void initGenStats(int id_val, int status_val = 0, int init_val = 0, int hp_val = 0)
+    public void initGenStats(int id_val, int status_val = 0, int init_val = 0, int hp_val = 0, int act_val = 2)
     {
         id = id_val;
         status = status_val; // 0 for player, 1 for enemy
         init = init_val;
         hp = hp_val;
+        actions = act_val;
     }
 
     // focus camera on this unit
@@ -28,9 +30,26 @@ public class UnitGeneral : MonoBehaviour
     }
 
     // adjust hp based on dmg received, kill unit if hp reaches 0
-    public void TakeDmg(int dmg)
+    public void TakeDmg(int dmg) // NOT DONE
     {
+        hp -= dmg;
 
+        if(hp <= 0)
+        {
+            Debug.Log("Dead");
+            Death();
+        }
+    }
+
+    // the unit is dead
+    public void Death()
+    {
+        // set its occupancy to false
+        UnitMovement movementUnit = gameObject.GetComponent<UnitMovement>();
+        movementUnit.SetOcc(false);
+
+        // remove unit from lists
+        Destroy(gameObject);
     }
 
     public int GetInit()
@@ -51,5 +70,15 @@ public class UnitGeneral : MonoBehaviour
     public int GetStatus()
     {
         return status;
+    }
+
+    public int GetActions()
+    {
+        return actions;
+    }
+
+    public void SetActions(int act_val)
+    {
+        actions = act_val;
     }
 }

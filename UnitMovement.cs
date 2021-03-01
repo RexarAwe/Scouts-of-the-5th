@@ -9,7 +9,7 @@ public class UnitMovement : MonoBehaviour
 {
     protected Vector3Int location; //get closest tile coordinate, or just set default to tilemap origin
     protected int spd; // determines movement range
-    protected bool movable = false;
+    [SerializeField]  protected bool movable = false;
 
     [SerializeField] protected MapManager mapManager;
     protected GameManager gameManager;
@@ -64,7 +64,13 @@ public class UnitMovement : MonoBehaviour
         movable = true;
     }
 
-    public void setMovable(bool val)
+    // set occupancy value at unit location
+    public void SetOcc(bool val)
+    {
+        mapManager.SetOccupancy(val, location);
+    }
+
+    public void SetMovable(bool val)
     {
         movable = val;
     }
@@ -74,12 +80,12 @@ public class UnitMovement : MonoBehaviour
         spd = val;
     }
 
-    public int getSpd()
+    public int GetSpd()
     {
         return spd;
     }
 
-    public Vector3Int getLoc()
+    public Vector3Int GetLoc()
     {
         return location;
     }
