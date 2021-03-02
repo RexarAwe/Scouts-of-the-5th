@@ -42,6 +42,18 @@ public class GameManager : MonoBehaviour
         AttackButton.SetActive(false);
     }
 
+    void Update()
+    {
+        if(generalUnit != null)
+        {
+            if (generalUnit.GetActions() == 0)
+            {
+                MoveButton.SetActive(false);
+                AttackButton.SetActive(false);
+            }
+        }
+    }
+
     public void SpawnSampleUnits()
     {
         SpawnRecruit(new Vector3(0, 0, 0), 0);
@@ -57,10 +69,16 @@ public class GameManager : MonoBehaviour
         UnitAttack attackUnit;
 
         unit = Instantiate(penguinViking, location, transform.rotation);
-        generalUnit = unit.GetComponent<UnitGeneral>();
-        generalUnit.initGenStats(unitID, allegiance, 2, 10);
+        
         movementUnit = unit.GetComponent<UnitMovement>();
+        movementUnit.Init();
         movementUnit.SetUnitSpd(2);
+
+        Debug.Log("Unit location: " + movementUnit.GetLoc());
+
+        generalUnit = unit.GetComponent<UnitGeneral>();
+        generalUnit.initGenStats(movementUnit.GetWorldLoc(), unitID, allegiance, 2, 10);
+
         attackUnit = unit.GetComponent<UnitAttack>();
         attackUnit.SetAtkStats(10, 1, 10);
         attackUnit.SetDmgStats(2, 5, 0);
@@ -71,11 +89,6 @@ public class GameManager : MonoBehaviour
     public void AddUnit(GameObject unit) // add the unit to the unit tracking list
     {
         units.Add(unit);
-    }
-
-    public void RemoveUnit(GameObject unit)
-    {
-        
     }
 
     // generate the units in battle and setup turns
@@ -123,8 +136,6 @@ public class GameManager : MonoBehaviour
     {
         MoveButton.SetActive(true);
         AttackButton.SetActive(true);
-
-        // adjust action points
     }
 
     public void MoveAction()

@@ -13,12 +13,28 @@ public class UnitMovement : MonoBehaviour
 
     [SerializeField] protected MapManager mapManager;
     protected GameManager gameManager;
+    UnitGeneral generalUnit;
 
     Tilemap tilemap;
 
     void Start()
     {
+        //mapManager = GameObject.Find("Map Manager").GetComponent<MapManager>();
+        //generalUnit = gameObject.GetComponent<UnitGeneral>();
+
+        //tilemap = GameObject.Find("Tilemap").GetComponent<Tilemap>();
+
+        //location = tilemap.WorldToCell(transform.position);
+
+        //// set occupancy state at unit location in mapManager to true
+        //mapManager.SetOccupancy(true, location);
+    }
+
+    public void Init()
+    {
         mapManager = GameObject.Find("Map Manager").GetComponent<MapManager>();
+        generalUnit = gameObject.GetComponent<UnitGeneral>();
+
         tilemap = GameObject.Find("Tilemap").GetComponent<Tilemap>();
 
         location = tilemap.WorldToCell(transform.position);
@@ -49,6 +65,11 @@ public class UnitMovement : MonoBehaviour
                     mapManager.SetOccupancy(true, location);
 
                     movable = false;
+
+                    mapManager.ClearHLTiles();
+
+                    // decrease action point by 1
+                    generalUnit.SetActions(generalUnit.GetActions() - 1);
                 }
             }
         }
@@ -85,8 +106,13 @@ public class UnitMovement : MonoBehaviour
         return spd;
     }
 
-    public Vector3Int GetLoc()
+    public Vector3Int GetLoc() // cell location
     {
         return location;
+    }
+
+    public Vector3 GetWorldLoc()
+    {
+        return tilemap.CellToWorld(location);
     }
 }

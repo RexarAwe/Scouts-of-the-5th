@@ -22,6 +22,8 @@ public class UnitAttack : MonoBehaviour
     private MapManager mapManager;
     private UnitMovement movementUnit;
 
+    UnitGeneral generalUnit;
+
     Tilemap tilemap;
 
     void Start()
@@ -31,6 +33,7 @@ public class UnitAttack : MonoBehaviour
         gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
         mapManager = GameObject.Find("Map Manager").GetComponent<MapManager>();
         movementUnit = gameObject.GetComponent<UnitMovement>();
+        generalUnit = gameObject.GetComponent<UnitGeneral>();
     }
 
     protected void Update()
@@ -50,6 +53,9 @@ public class UnitAttack : MonoBehaviour
                     {
                         RollAttack(gameManager.GetUnit(tileCoordinate));
                         atkAble = false;
+
+                        mapManager.ClearHLTiles();
+                        generalUnit.SetActions(generalUnit.GetActions() - 1);
                     }
                 }
             }

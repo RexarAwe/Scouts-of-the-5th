@@ -13,14 +13,50 @@ public class UnitGeneral : MonoBehaviour
     protected int hp;
     protected int actions;
 
+    UnitMovement movementUnit;
+
+    [SerializeField] private GameObject hpBar; // prefab storage
+    private GameObject healthBar; // actual reference
+    private HpBar hpBarScript;
+    private bool initiated = false;
+
+    void Start()
+    {
+        movementUnit = gameObject.GetComponent<UnitMovement>();
+    }
+
     // initialize general stats all units should have
-    public void initGenStats(int id_val, int status_val = 0, int init_val = 0, int hp_val = 0, int act_val = 2)
+    public void initGenStats(Vector3 location, int id_val, int status_val = 0, int init_val = 0, int hp_val = 0, int act_val = 2)
     {
         id = id_val;
         status = status_val; // 0 for player, 1 for enemy
         init = init_val;
         hp = hp_val;
         actions = act_val;
+
+        // create hp bar at correct position
+        Vector3 worldPos = location;
+        worldPos.y -= 0.7f;
+        healthBar = Instantiate(hpBar, Camera.main.WorldToScreenPoint(worldPos), transform.rotation);
+        hpBarScript = healthBar.GetComponent<HpBar>();
+        hpBarScript.Init();
+        hpBarScript.SetMaxHp(hp);
+        hpBarScript.SetValue(hp);
+
+        GameObject canvas = GameObject.Find("Canvas");
+        healthBar.transform.SetParent(canvas.transform);
+
+        initiated = true;
+    }
+
+    void Update()
+    {
+        if (initiated)
+        {
+            Vector3 worldPos = movementUnit.GetWorldLoc();
+            worldPos.y -= 0.7f;
+            healthBar.transform.position = Camera.main.WorldToScreenPoint(worldPos);
+        }
     }
 
     // focus camera on this unit
@@ -33,8 +69,9 @@ public class UnitGeneral : MonoBehaviour
     public void TakeDmg(int dmg) // NOT DONE
     {
         hp -= dmg;
+        hpBarScript.SetValue(hp);
 
-        if(hp <= 0)
+        if (hp <= 0)
         {
             Debug.Log("Dead");
             Death();
@@ -49,6 +86,7 @@ public class UnitGeneral : MonoBehaviour
         movementUnit.SetOcc(false);
 
         // remove unit from lists
+        Destroy(healthBar);
         Destroy(gameObject);
     }
 

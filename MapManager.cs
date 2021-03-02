@@ -382,11 +382,14 @@ public class MapManager : MonoBehaviour
                 // iterate through unit list to check if any of them are on the hex
                 for (int k = 0; k < gameManager.units.Count; k++)
                 {
-                    UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
-                    UnitGeneral generalUnit = gameManager.units[k].GetComponent<UnitGeneral>();
-                    if ((new Vector3Int((int)x, (int)y, 0) == movementUnit.GetLoc()) && (generalUnit.GetStatus() != unitStatus))
+                    if(gameManager.units[k] != null)
                     {
-                        SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
+                        UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
+                        UnitGeneral generalUnit = gameManager.units[k].GetComponent<UnitGeneral>();
+                        if ((new Vector3Int((int)x, (int)y, 0) == movementUnit.GetLoc()) && (generalUnit.GetStatus() != unitStatus))
+                        {
+                            SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
+                        }
                     }
                 }
             }
@@ -398,11 +401,14 @@ public class MapManager : MonoBehaviour
 
                 for (int k = 0; k < gameManager.units.Count; k++)
                 {
-                    UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
-                    UnitGeneral generalUnit = gameManager.units[k].GetComponent<UnitGeneral>();
-                    if ((new Vector3Int((int)x, (int)y, 0) == movementUnit.GetLoc()) && (generalUnit.GetStatus() != unitStatus))
+                    if (gameManager.units[k] != null)
                     {
-                        SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
+                        UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
+                        UnitGeneral generalUnit = gameManager.units[k].GetComponent<UnitGeneral>();
+                        if ((new Vector3Int((int)x, (int)y, 0) == movementUnit.GetLoc()) && (generalUnit.GetStatus() != unitStatus))
+                        {
+                            SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
+                        }
                     }
                 }
             }
@@ -418,11 +424,14 @@ public class MapManager : MonoBehaviour
 
                 for (int k = 0; k < gameManager.units.Count; k++)
                 {
-                    UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
-                    UnitGeneral generalUnit = gameManager.units[k].GetComponent<UnitGeneral>();
-                    if ((new Vector3Int((int)x, (int)y, 0) == movementUnit.GetLoc()) && (generalUnit.GetStatus() != unitStatus))
+                    if (gameManager.units[k] != null)
                     {
-                        SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
+                        UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
+                        UnitGeneral generalUnit = gameManager.units[k].GetComponent<UnitGeneral>();
+                        if ((new Vector3Int((int)x, (int)y, 0) == movementUnit.GetLoc()) && (generalUnit.GetStatus() != unitStatus))
+                        {
+                            SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
+                        }
                     }
                 }
             }
@@ -438,11 +447,14 @@ public class MapManager : MonoBehaviour
 
                 for (int k = 0; k < gameManager.units.Count; k++)
                 {
-                    UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
-                    UnitGeneral generalUnit = gameManager.units[k].GetComponent<UnitGeneral>();
-                    if ((new Vector3Int((int)x, (int)y, 0) == movementUnit.GetLoc()) && (generalUnit.GetStatus() != unitStatus))
+                    if (gameManager.units[k] != null)
                     {
-                        SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
+                        UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
+                        UnitGeneral generalUnit = gameManager.units[k].GetComponent<UnitGeneral>();
+                        if ((new Vector3Int((int)x, (int)y, 0) == movementUnit.GetLoc()) && (generalUnit.GetStatus() != unitStatus))
+                        {
+                            SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
+                        }
                     }
                 }
             }
@@ -454,11 +466,14 @@ public class MapManager : MonoBehaviour
 
                 for (int k = 0; k < gameManager.units.Count; k++)
                 {
-                    UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
-                    UnitGeneral generalUnit = gameManager.units[k].GetComponent<UnitGeneral>();
-                    if ((new Vector3Int((int)x, (int)y, 0) == movementUnit.GetLoc()) && (generalUnit.GetStatus() != unitStatus))
+                    if (gameManager.units[k] != null)
                     {
-                        SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
+                        UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
+                        UnitGeneral generalUnit = gameManager.units[k].GetComponent<UnitGeneral>();
+                        if ((new Vector3Int((int)x, (int)y, 0) == movementUnit.GetLoc()) && (generalUnit.GetStatus() != unitStatus))
+                        {
+                            SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
+                        }
                     }
                 }
             }
@@ -474,11 +489,14 @@ public class MapManager : MonoBehaviour
 
                 for (int k = 0; k < gameManager.units.Count; k++)
                 {
-                    UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
-                    UnitGeneral generalUnit = gameManager.units[k].GetComponent<UnitGeneral>();
-                    if ((new Vector3Int((int)x, (int)y, 0) == movementUnit.GetLoc()) && (generalUnit.GetStatus() != unitStatus))
+                    if (gameManager.units[k] != null)
                     {
-                        SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
+                        UnitMovement movementUnit = gameManager.units[k].GetComponent<UnitMovement>();
+                        UnitGeneral generalUnit = gameManager.units[k].GetComponent<UnitGeneral>();
+                        if ((new Vector3Int((int)x, (int)y, 0) == movementUnit.GetLoc()) && (generalUnit.GetStatus() != unitStatus))
+                        {
+                            SetAtkable(true, new Vector3Int((int)x, (int)y, 0));
+                        }
                     }
                 }
             }
